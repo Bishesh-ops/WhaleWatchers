@@ -1,0 +1,49 @@
+# =========================
+# Python / Chaos Engine
+# =========================
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+
+# =========================
+# .NET 10 / ClientGateway
+# =========================
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+appsettings.Development.json
+
+# =========================
+# Java 25 / DataCruncher
+# =========================
+target/
+*.class
+*.log
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# =========================
+# OS & IDEs (VS Code, Mac, etc.)
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+.DS_Store
+
+# =========================
+# Docker
+# =========================
+# Ignore any local db-data mounts if we ever switch from named volumes
+db-data/
+pgdata/
