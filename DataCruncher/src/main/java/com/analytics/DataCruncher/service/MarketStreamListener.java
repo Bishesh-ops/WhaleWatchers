@@ -22,7 +22,7 @@ public class MarketStreamListener extends TextWebSocketHandler {
     private final WhaleAlertRepository repository;
     private final ObjectMapper objectMapper;
 
-    private static final BigDecimal WHALE_THRESHOLD = new BigDecimal("5000000.00");
+    private static final BigDecimal WHALE_THRESHOLD = new BigDecimal("10000000.00");
 
     public MarketStreamListener(WhaleAlertRepository repository) {
         this.repository = repository;
@@ -61,7 +61,7 @@ public class MarketStreamListener extends TextWebSocketHandler {
                 alert.setTotalPremium(trade.totalPremium());
                 alert.setVolume(trade.volume());
                 alert.setDetectedAt(java.time.LocalDateTime.now());
-                alert.setAnomalyReason("Turnover Exceeds Rs.50 Lakhs NPR");
+                alert.setAnomalyReason("Turnover Exceeds Rs.1 Crore NPR");
                 
                 repository.save(alert);
             }
