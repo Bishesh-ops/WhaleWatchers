@@ -22,7 +22,7 @@ public class MarketStreamListener extends TextWebSocketHandler {
     private final WhaleAlertRepository repository;
     private final ObjectMapper objectMapper;
 
-    private static final BigDecimal WHALE_THRESHOLD = new BigDecimal("1000000.00");
+    private static final BigDecimal WHALE_THRESHOLD = new BigDecimal("5000000.00");
 
     public MarketStreamListener(WhaleAlertRepository repository) {
         this.repository = repository;
@@ -33,8 +33,8 @@ public class MarketStreamListener extends TextWebSocketHandler {
     @PostConstruct
     public void connectToFirehose() {
         StandardWebSocketClient client = new StandardWebSocketClient();
-       try {
-            System.out.println("Booting up Market Listener... connecting to Chaos Engine.");
+        try {
+            System.out.println("Booting up Market Listener... connecting to ShareSansar Engine.");
             client.execute(this, "ws://localhost:8765").get();
         } catch (InterruptedException | java.util.concurrent.ExecutionException e) {
             System.err.println("Failed to connect to WebSocket: " + e.getMessage());
@@ -47,21 +47,21 @@ public class MarketStreamListener extends TextWebSocketHandler {
     }
 
     private void processTrade(String jsonPayload) {
-    try {
+        try {
             TradeMessage trade = objectMapper.readValue(jsonPayload, TradeMessage.class);
 
             if (trade.totalPremium().compareTo(WHALE_THRESHOLD) >= 0) {
-                System.out.println("WHALE DETECTED: " + trade.ticker() + " | Premium: $" + trade.totalPremium());
+                System.out.println("WHALE DETECTED: " + trade.ticker() + " | Turnover: Rs. " + trade.totalPremium());
 
                 WhaleAlert alert = new WhaleAlert();
                 alert.setTickerSymbol(trade.ticker());
-                alert.setContractType(trade.contractType());
-                alert.setStrikePrice(trade.strikePrice());
-                alert.setExpirationDate(trade.expirationDate());
+                alert.setContractType(trade.contractType()); // Will be "EQUITY"
+                alert.setStrikePrice(trade.strikePrice()); 
+                alert.setExpirationDate(trade.expirationDate()); 
                 alert.setTotalPremium(trade.totalPremium());
                 alert.setVolume(trade.volume());
                 alert.setDetectedAt(java.time.LocalDateTime.now());
-                alert.setAnomalyReason("Premium Exceeds $1M Threshold");
+                alert.setAnomalyReason("Turnover Exceeds Rs.50 Lakhs NPR");
                 
                 repository.save(alert);
             }
