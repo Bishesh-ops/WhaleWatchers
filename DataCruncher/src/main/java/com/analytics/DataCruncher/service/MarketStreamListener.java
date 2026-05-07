@@ -51,7 +51,7 @@ public class MarketStreamListener extends TextWebSocketHandler {
             TradeMessage trade = objectMapper.readValue(jsonPayload, TradeMessage.class);
 
             if (trade.totalPremium().compareTo(WHALE_THRESHOLD) >= 0) {
-                System.out.println("🐋 WHALE DETECTED: " + trade.ticker() + " | Premium: $" + trade.totalPremium());
+                System.out.println("WHALE DETECTED: " + trade.ticker() + " | Premium: $" + trade.totalPremium());
 
                 WhaleAlert alert = new WhaleAlert();
                 alert.setTickerSymbol(trade.ticker());
