@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WhaleWatchers | NEPSE Radar</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <style>
+                body {
+                background-color: #0d1117;
+                color: #c9d1d9;
+                font-family: 'Courier New', Courier, monospace;
+                margin: 0;
+                padding: 20px;
+            }
+            h1 {
+                text-align: center;
+                color: #58a6ff;
+                border-bottom: 1px solid #30363d;
+                padding-bottom: 10px;
+            }
+            .dashboard-container {
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .chart-container {
+                background-color: #161b22;
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid #30363d;
+                height: 400px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background-color: #161b22;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            th, td {
+                padding: 12px 15px;
+                text-align: left;
+                border-bottom: 1px solid #30363d;
+            }
+            th {
+                background-color: #21262d;
+                color: #8b949e;
+                font-weight: bold;
+            }
+            .highlight-green {
+                color: #3fb950;
+                font-weight: bold;
+            }
+            .highlight-blue {
+                color: #58a6ff;
+                font-weight: bold;
+            }
+            </style>
+        </head>
+        <body>
+            <h1>WhaleWatchers: NEPSE Block Trade Radar</h1>
+            <div class="dashboard-container">
+        <div class="chart-container">
+            <canvas id="whaleChart"></canvas>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Ticker</th>
+                    <th>LTP (Rs)</th>
+                    <th>Volume</th>
+                    <th>Turnover (Rs)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('whaleChart').getContext('2d');
+        const whaleChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Turnover (NPR)',
+                    data: [], 
+                    backgroundColor: 'rgba(88, 166, 255, 0.6)',
+                    borderColor: 'rgba(88, 166, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#30363d' },
+                        ticks: { color: '#8b949e' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#8b949e' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#c9d1d9' } }
+                }
+            }
+        });
+        async function fetchWhaleData() {
+            try {
+                const response = await fetch('http://localhost:5000/api/whales/top');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error("Error fetching data from API:", error);
+            }
+        }
+        function updateDashboard(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            const tickers = [];
+            const turnovers = [];
+
+            data.forEach(trade => {
+                tickers.push(trade.tickerSymbol);
+                turnovers.push(trade.totalPremium);
+
+                const formattedPremium = new Intl.NumberFormat('en-IN').format(trade.totalPremium);
+                const formattedVolume = new Intl.NumberFormat('en-IN').format(trade.volume);
+                const formattedTime = new Date(trade.detectedAt).toLocaleTimeString();
+
+                const row = `
+                    <tr>
+                        <td>${formattedTime}</td>
+                        <td class="highlight-blue">${trade.tickerSymbol}</td>
+                        <td>${trade.strikePrice}</td>
+                        <td>${formattedVolume}</td>
+                        <td class="highlight-green">${formattedPremium}</td>
+                        <td>${trade.anomalyReason}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            whaleChart.data.labels = tickers;
+            whaleChart.data.datasets[0].data = turnovers;
+            whaleChart.update();
+        }
+
+        fetchWhaleData();
+        setInterval(fetchWhaleData, 5000);
+    </script>
+</body>
+</html>
